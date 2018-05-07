@@ -21,13 +21,21 @@ use_verbose = ("--verbose" in sys.argv)
 # Clean up after being finished?
 use_clean = ("--clean" in sys.argv)
 
+# Ignore warning
+ignore_warnings = ("--ignore-warnings" in sys.argv)
+
 # Clean up after being finished?
 show_header_scanning = ("--show-header-scanning" in sys.argv)
 
 # Commands to add to each file
 # "-D_GLIBCXX_DEBUG"
 # "-msse4a", "-DBE_COMPUTE2_COMPATIBLE" "-O3", "-DNDEBUG"
-compiler_settings = ["-Wall", "-Wdisabled-optimization", "-O3", "-DNDEBUG"]
+compiler_settings = ["-O3", "-DNDEBUG"]
+if ignore_warnings:
+	compiler_settings += ["-w"]
+else:
+	compiler_settings += ["-Wall", "-Wdisabled-optimization"]
+
 linker_settings = []
 
 source_extensions = [".cpp", ".cxx"]
