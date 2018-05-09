@@ -24,6 +24,9 @@ use_clean = ("--clean" in sys.argv)
 # Ignore warning
 ignore_warnings = ("--ignore-warnings" in sys.argv)
 
+# Get rid of GPL dependencies
+no_gpl = ("--no-gpl" in sys.argv)
+
 # Clean up after being finished?
 show_header_scanning = ("--show-header-scanning" in sys.argv)
 
@@ -35,6 +38,9 @@ if ignore_warnings:
 	compiler_settings += ["-w"]
 else:
 	compiler_settings += ["-Wall", "-Wdisabled-optimization"]
+
+if no_gpl:
+	compiler_settings += ["-DNO_GPL"]
 
 linker_settings = []
 
