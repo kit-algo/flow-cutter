@@ -50,35 +50,13 @@ namespace cch_order{
 		assert(is_connected(tail, head));
 		assert(2*(node_count-1) == arc_count);
 
-		auto out_arc = invert_id_id_func(tail);
-
-		ArrayIDFunc<int>deg = id_func(node_count, [](int){return 0;});
-		for(int xy=0; xy<arc_count; ++xy)
-			++deg[tail(xy)];
+		(void)arc_count; // no warning
 
 		ArrayIDIDFunc order(node_count, input_node_id.image_count());
-		int order_end = 0;
 
-		{
-			ArrayIDIDFunc stack(node_count, node_count);
-			int stack_end = 0;
-			for(int x=0; x<node_count; ++x)
-				if(deg[x] == 1)
-					stack[stack_end++] = x;
-
-			while(stack_end != 0){
-				int x = stack[--stack_end];
-				order[order_end++] = x;
-				for(int xy:out_arc(x)){
-					int y = head[xy];
-					--deg[y];
-					if(deg[y] == 1){
-						stack[stack_end++] = y;
-					}
-				}
-			}
-		}
-
+		auto level = compute_tree_node_ranking(compute_successor_function(tail, head));
+		auto identity = count_range(node_count);
+		stable_sort_copy_by_id(std::begin(identity), std::end(identity), std::begin(order), node_count, level);
 		for(auto&x:order)
 			x = input_node_id(x);
 
