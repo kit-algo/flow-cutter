@@ -62,6 +62,18 @@ typename std::enable_if<
 	return {image_count, id_func(preimage_count, std::move(func))};
 }
 
+struct IdentityIDIDFunc{
+	IdentityIDIDFunc(int image_count) : image_count_(image_count) {}
+
+	int preimage_count() const {return image_count_;}
+	int image_count() const {return image_count_;}
+	int operator()(int preimage) const {
+		assert(0 <= preimage && preimage <= preimage_count() && "preimage out of bounds");
+		return preimage;
+	}
+	int image_count_;
+};
+
 template<int value>
 struct ConstIntIDFunc{
 	explicit ConstIntIDFunc(int preimage_count):preimage_count_(preimage_count){}

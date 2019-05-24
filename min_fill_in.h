@@ -54,11 +54,136 @@ namespace cch_order{
 
 		ArrayIDIDFunc order(node_count, input_node_id.image_count());
 
-		auto level = compute_tree_node_ranking(compute_successor_function(tail, head));
-		auto identity = count_range(node_count);
-		stable_sort_copy_by_id(std::begin(identity), std::end(identity), std::begin(order), node_count, level);
-		for(auto&x:order)
-			x = input_node_id(x);
+		auto out_arc = invert_id_id_func(tail);
+		auto back_arc = compute_back_arc_permutation(tail, head);
+
+		ArrayIDFunc<int>deg = id_func(node_count, [](int){return 0;});
+		ArrayIDFunc<int>subtree_size = id_func(arc_count, [](int){return -1;});
+
+		for(int xy=0; xy<arc_count; ++xy) {
+			++deg[tail(xy)];
+		}
+
+		int node_with_smallest_maximum_subtree_size = -1;
+		int smallest_maximum_subtree_size = std::numeric_limits<int>::max();
+
+		ArrayIDIDFunc queue(node_count, node_count);
+		{
+			int queue_end = 0;
+			for(int x=0; x<node_count; ++x)
+				if(deg[x] == 1)
+					queue[queue_end++] = x;
+
+			int queue_begin = 0;
+
+			while(queue_begin < queue_end){
+				int x = queue[queue_begin++];
+
+				int sum_subtree_sizes = 0;
+				int parent_arc = -1;
+				int largest_subtree_size = 0;
+
+				for(int xy:out_arc(x)){
+					int y = head[xy];
+
+					if (subtree_size[xy] == -1) {
+						assert(parent_arc == -1);
+						parent_arc = xy;
+					} else {
+						sum_subtree_sizes += subtree_size[xy];
+						if (subtree_size[xy] > largest_subtree_size) {
+							largest_subtree_size = subtree_size[xy];
+						}
+					}
+
+					--deg[y];
+					if(deg[y] == 1){
+						queue[queue_end++] = y;
+					}
+				}
+
+				if (parent_arc != -1) {
+					subtree_size[back_arc(parent_arc)] = sum_subtree_sizes + 1;
+					subtree_size[parent_arc] = node_count - sum_subtree_sizes - 1;
+
+					if (subtree_size[parent_arc] > largest_subtree_size) {
+						largest_subtree_size = subtree_size[parent_arc];
+					}
+				}
+
+				if (largest_subtree_size < smallest_maximum_subtree_size) {
+					smallest_maximum_subtree_size = largest_subtree_size;
+					node_with_smallest_maximum_subtree_size = x;
+				}
+			}
+		}
+
+		order[node_count - 1] = input_node_id(node_with_smallest_maximum_subtree_size);
+		int order_begin = 0;
+
+		ArrayIDFunc<int> component_node_id = id_func(node_count, [](int) {return -1;});
+
+		for (int xy : out_arc(node_with_smallest_maximum_subtree_size)) {
+			int sub_node_count = subtree_size[xy];
+
+			int queue_begin = 0;
+			int queue_end = 1;
+			queue[0] = head[xy];
+			component_node_id[head[xy]] = 0;
+
+			int sub_arc_count = 2*(sub_node_count - 1);
+			ArrayIDIDFunc sub_tail(sub_arc_count, sub_node_count);
+			ArrayIDIDFunc sub_head(sub_arc_count, sub_node_count);
+			int current_arc = 0;
+
+			int max_deg = 0;
+
+			while (queue_begin < queue_end) {
+				int u = queue[queue_begin++];
+				assert(component_node_id[u] != -1);
+
+				int deg_u = 0;
+
+				for (int uv : out_arc(u)) {
+					int v = head[uv];
+
+					if (v == node_with_smallest_maximum_subtree_size) continue;
+
+					++deg_u;
+
+					if (component_node_id[v] == -1) {
+						component_node_id[v] = queue_end;
+						queue[queue_end] = v;
+						++queue_end;
+					}
+
+					sub_tail[current_arc] = component_node_id[u];
+					sub_head[current_arc] = component_node_id[v];
+					++current_arc;
+				}
+
+				if (deg_u > max_deg) max_deg = deg_u;
+			}
+
+			assert(queue_end == sub_node_count);
+			assert(current_arc == sub_arc_count);
+
+			if (max_deg > 2) {
+				auto sub_order = compute_tree_graph_order(sub_tail, sub_head, IdentityIDIDFunc(sub_node_count));
+
+				for (int i = 0; i < queue_end; ++i) {
+					order[order_begin++] = input_node_id(queue(sub_order(i)));
+				}
+			} else {
+				auto sub_order = compute_path_graph_order(sub_node_count, IdentityIDIDFunc(sub_node_count));
+
+				for (int i = 0; i < queue_end; ++i) {
+					order[order_begin++] = input_node_id(queue(sub_order(i)));
+				}
+			}
+		}
+
+		assert(order_begin == node_count - 1);
 
 		assert(is_valid_partial_order(order));
 		return order; // NVRO
@@ -67,11 +192,8 @@ namespace cch_order{
 	template<class Tail, class Head>
 	ArrayIDIDFunc compute_tree_graph_order(const Tail&tail, const Head&head){
 		return compute_tree_graph_order(
-			tail, head, 
-			id_id_func(
-				tail.image_count(), tail.image_count(), 
-				[](int x){return x;}
-			)
+			tail, head,
+			IdentityIDIDFunc(tail.image_count())
 		);
 	}
 
