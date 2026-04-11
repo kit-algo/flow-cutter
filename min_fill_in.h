@@ -302,7 +302,7 @@ namespace cch_order{
 			}
 		);
 		
-		if(separator.size() == node_count){
+		if(static_cast<int>(separator.size()) == node_count){
 			keep_arc_flag.fill(false);
 		}
 

@@ -170,8 +170,7 @@ namespace flow_cutter{
 					return {};
 			}
 
-			return std::move(separator);
-
+			return separator; // NRVO
 		}
 	private:
 		Config config;

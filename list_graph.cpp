@@ -402,7 +402,7 @@ ListGraph load_metis_graph_impl(std::istream&in){
 			}
 		}
 
-	}catch(std::runtime_error err){
+	}catch(const std::runtime_error&err){
 		throw std::runtime_error(std::string(err.what()) + " in line "+std::to_string(line_num));
 	}
 	if(next_node_id != node_count)
