@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import sys, os, re, shutil, subprocess
 
 ################################################################################
@@ -76,6 +76,8 @@ else:
 def invisible_cmd(command):
 	p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdout, stderr = p.communicate()
+	stdout = stdout.decode()
+	stderr = stderr.decode()
 	if p.returncode != 0 or stderr != "":
 		print(color_error+"Command Failed:" + color_end + "\n" + stderr)
 		sys.exit(1)
@@ -85,6 +87,8 @@ def cmd(command):
 	print(color_command+" ".join(command)+color_end)
 	p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdout, stderr = p.communicate()
+	stdout = stdout.decode()
+	stderr = stderr.decode()
 	if p.returncode != 0 or stderr != "":
 		print(color_error+"Command Failed:" + color_end + "\n" + stderr)
 		sys.exit(1)
@@ -107,7 +111,7 @@ def run_linker(object_files, executable_file, flags):
 	cmd([compiler] + object_files + ["-o", executable_file] + linker_settings + flags)
 
 def find_flags(code, flag_name):
-	l = (re.split('\s+', x) for x in re.findall(re.escape(flag_name)+'(.*)', code))
+	l = (re.split('\\s+', x) for x in re.findall(re.escape(flag_name)+'(.*)', code))
 	return list(x for y in l for x in y if x!="")
 
 def extract_code_flags(file_name):
