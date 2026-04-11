@@ -19,7 +19,7 @@ The commands above should work on all Unix systems. On Windows, you will at leas
 
 License: The code in this repository is under BSD license. However, one can optionally link libraries, whose code is not copied in this repository, that have a GPL license. If you link these libraries, the code in this repository is also under GPL for the usage case. The relevant libraries are
 
-* [[https://tiswww.case.edu/php/chet/readline/rltop.html|GNU readline library]] to enable tab-completion. By default it is is compiled in. You can define the macro NO_GPL to get rid of it. In this case, tab-completion does not work. Fortunately, all major functionality is untouched by this macro.
+* [GNU readline library](https://tiswww.case.edu/php/chet/readline/rltop.html) to enable tab-completion. By default it is is compiled in. You can define the macro NO_GPL to get rid of it. In this case, tab-completion does not work. Fortunately, all major functionality is untouched by this macro.
 
-* [[http://algo2.iti.kit.edu/kahip/|KaHIP]]. By default, KaHip is not linked. You can build a variant with KaHIP support using `./build.sh`. This alternative build mode enables commands that compute nested dissection orders using KaHIP.
+* [KaHIP](http://algo2.iti.kit.edu/kahip/). By default, KaHip is not linked. You can build a variant with KaHIP support using `./build.sh`. This alternative build mode enables commands that compute nested dissection orders using KaHIP.
 
